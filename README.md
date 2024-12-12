@@ -1,41 +1,38 @@
 [![Latest Stable Version](https://poser.pugx.org/web-vision/wv_deepltranslate/v/stable.svg?style=for-the-badge)](https://packagist.org/packages/web-vision/wv_deepltranslate)
+[![License](https://poser.pugx.org/web-vision/wv_deepltranslate/license?style=for-the-badge)](https://packagist.org/packages/web-vision/wv_deepltranslate)
 [![TYPO3 11.5](https://img.shields.io/badge/TYPO3-11.5-green.svg?style=for-the-badge)](https://get.typo3.org/version/11)
-[![TYPO3 10.4](https://img.shields.io/badge/TYPO3-10.4-orange.svg?style=for-the-badge)](https://get.typo3.org/version/10)
-[![License](http://poser.pugx.org/web-vision/wv_deepltranslate/license?style=for-the-badge)](https://packagist.org/packages/web-vision/wv_deepltranslate)
+[![TYPO3 12.4](https://img.shields.io/badge/TYPO3-12.4-green.svg?style=for-the-badge)](https://get.typo3.org/version/12)
 [![Total Downloads](https://poser.pugx.org/web-vision/wv_deepltranslate/downloads.svg?style=for-the-badge)](https://packagist.org/packages/web-vision/wv_deepltranslate)
 [![Monthly Downloads](https://poser.pugx.org/web-vision/wv_deepltranslate/d/monthly?style=for-the-badge)](https://packagist.org/packages/web-vision/wv_deepltranslate)
 
-# TYPO3 extension `wv_deepltranslate`
+# TYPO3 extension `deepltranslate_core`
 
-This extension provides automated translation of pages, content and records
-to languages supported by [DeepL](https://www.deepl.com/de/docs-api/).
+This extension provides automated translation of pages, content and records in TYPO3
+for languages supported by [DeepL](https://www.deepl.com/de/docs-api/).
 
 ## Features
 
-* Bulk translation via TYPO3 built-in Translation Wizard
+* Translate content elements via TYPO3 built-in translation wizard
 * Single drop down translation parallel to regular page translation
   * Translate your page with all fields you want
 * One-Click translation of single records
 * Glossary support
   * Manage your own glossaries in TYPO3
-  * synchronise glossaries to DeepL API
-  * translate content using your glossaries
+  * Synchronise glossaries to DeepL API
+  * Translate content using your glossaries
 
-## TYPO3 v12 Early-Access-Programme
+![Screenshot](Documentation/Images/example-of-deepl-translation-selection-in-typo3-backend.png)
 
-A TYPO3 LTS 12 ready versions is currently available for Early-Access-Partners.
-Partners receive the following services and advantages:
+## Early-Access-Programm
 
-* Access to the latest extension version wv_deepltranslate — **Ready for TYPO3 12 LTS**
-* **Access** to code repository for **12 months**, extended access for
-  **Composer** users for **15 months** (via packagist.com)
-* Preferential access to support services
-* Your logo and link on our DeepL Translate website
-* **PREVIEW**: Access to demo instances with exclusive insights
-* **EXCLUSIVE**: Add-On Extension: Activate Translated Content — Activates all
-  translated content on a page at the touch of a button.
+Early access partners of DeepL Translate will benefit from exclusive access to all add-ons, developer preview versions, access to private GitHub repositories, priority support, logo placement and a backlink on the official website. You will also get access to the DeepL Translate version 5.0 announced for TYPO3 v13.
 
-  The tedious activation of individual content elements is no longer necessary.
+The following add-ons are currently available as part of the Early Access Program:
+
+* **DeepL Translate Assets**: Translation of file meta data with DeepL
+* **DeepL Translate Auto-Renew**: Automatic creation of pages and content elements in translations, renewal of translations when the original language changes
+* **DeepL Translate Bulk**: Bulk translation of pages and content based on the page tree
+* **Enable Translated Content**: Activation of all translated content elements with one click
 
 Find out more: https://www.web-vision.de/en/deepl.html
 
@@ -43,26 +40,29 @@ Find out more: https://www.web-vision.de/en/deepl.html
 
 Install with your favour:
 
-* [TER](https://extensions.typo3.org/extension/wv_deepltranslate/)
-* Extension Manager
-* composer
+* [Composer](https://packagist.org/packages/web-vision/deepltranslate-core)
+* [TER / Extension Manager](https://extensions.typo3.org/extension/deepltranslate_core/)
+* [Git](https://github.com/web-vision/deepltranslate-core)
 
 We prefer composer installation:
 ```bash
-composer req web-vision/wv_deepltranslate
+composer require web-vision/deepltranslate-core
 ```
 
-|                  | URL                                                               |
-|------------------|-------------------------------------------------------------------|
-| **Repository:**  | https://github.com/web-vision/wv_deepltranslate                   |
-| **Read online:** | https://docs.typo3.org/p/web-vision/wv_deepltranslate/main/en-us/ |
-| **TER:**         | https://extensions.typo3.org/extension/wv_deepltranslate/         |
+The DeepL translation buttons are only displayed once you have set up the API
+and desired target languages. Read the documentation to find out how to do this.
+
+## Documentation
+
+Read online: https://docs.typo3.org/p/web-vision/deepltranslate-core/main/en-us/
 
 ## Sponsors
+
 We appreciate very much the sponsorships of the developments and features in
 the DeepL Translate Extension for TYPO3.
 
 ### DeepL Glossary feature sponsored by
+
 * [Universität Osnabrück](https://www.uni-osnabrueck.de)
 * [Hochschule für Musik Würzburg](https://www.hfm-wuerzburg.de)
 * [Carl von Ossietzky Universität Oldenburg](https://uol.de/)

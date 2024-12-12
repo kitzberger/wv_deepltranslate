@@ -1,16 +1,17 @@
-.. include:: /Includes.rst.txt
+..  include:: /Includes.rst.txt
 
-.. _administration:
+..  _administration:
 
 ==============
 Administration
 ==============
 
-.. toctree::
+..  toctree::
     :maxdepth: 5
     :titlesonly:
 
     Installation/Index
     Configuration/Index
+    Access/Index
     AutoTranslatePrefix/Index
     Updates/Index

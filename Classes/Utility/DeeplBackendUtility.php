@@ -2,47 +2,35 @@
 
 declare(strict_types=1);
 
-namespace WebVision\WvDeepltranslate\Utility;
+namespace WebVision\Deepltranslate\Core\Utility;
 
+use TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
-use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Database\Query\Restriction\WorkspaceRestriction;
+use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\Imaging\Icon;
 use TYPO3\CMS\Core\Imaging\IconFactory;
-use TYPO3\CMS\Core\Imaging\IconProvider\BitmapIconProvider;
-use TYPO3\CMS\Core\Imaging\IconRegistry;
+use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\MathUtility;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
-use WebVision\WvDeepltranslate\Exception\LanguageIsoCodeNotFoundException;
-use WebVision\WvDeepltranslate\Exception\LanguageRecordNotFoundException;
-use WebVision\WvDeepltranslate\Service\DeeplGlossaryService;
-use WebVision\WvDeepltranslate\Service\LanguageService;
+use WebVision\Deepltranslate\Core\Configuration;
+use WebVision\Deepltranslate\Core\Exception\LanguageIsoCodeNotFoundException;
+use WebVision\Deepltranslate\Core\Exception\LanguageRecordNotFoundException;
+use WebVision\Deepltranslate\Core\Service\DeeplGlossaryService;
+use WebVision\Deepltranslate\Core\Service\IconOverlayGenerator;
+use WebVision\Deepltranslate\Core\Service\LanguageService;
+use WebVision\Deepltranslate\Core\Service\ProcessingInstruction;
 
+// @todo Make class final. Overriding a static utility class does not make much sense, but better to enforce it.
 class DeeplBackendUtility
 {
     private static string $apiKey = '';
-
-    /**
-     * @deprecated
-     */
-    private static string $apiUrl = '';
-
-    /**
-     * @deprecated
-     */
-    private static string $googleApiKey = '';
-
-    /**
-     * @deprecated
-     */
-    private static string $googleApiUrl = '';
-
-    private static string $deeplFormality = 'default';
 
     private static bool $configurationLoaded = false;
 
@@ -62,50 +50,6 @@ class DeeplBackendUtility
         return self::$apiKey;
     }
 
-    /**
-     * @return string
-     */
-    public static function getApiUrl(): string
-    {
-        if (!self::$configurationLoaded) {
-            self::loadConfiguration();
-        }
-        return self::$apiUrl;
-    }
-
-    /**
-     * @return string
-     */
-    public static function getGoogleApiKey(): string
-    {
-        if (!self::$configurationLoaded) {
-            self::loadConfiguration();
-        }
-        return self::$googleApiKey;
-    }
-
-    /**
-     * @return string
-     */
-    public static function getGoogleApiUrl(): string
-    {
-        if (!self::$configurationLoaded) {
-            self::loadConfiguration();
-        }
-        return self::$googleApiUrl;
-    }
-
-    /**
-     * @return string
-     */
-    public static function getDeeplFormality(): string
-    {
-        if (!self::$configurationLoaded) {
-            self::loadConfiguration();
-        }
-        return self::$deeplFormality;
-    }
-
     public static function isDeeplApiKeySet(): bool
     {
         if (!self::$configurationLoaded) {
@@ -117,16 +61,15 @@ class DeeplBackendUtility
 
     public static function loadConfiguration(): void
     {
-        $extensionConfiguration = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('wv_deepltranslate');
-        self::$apiKey = $extensionConfiguration['apiKey'];
-        self::$deeplFormality = $extensionConfiguration['deeplFormality'];
-        self::$apiUrl = $extensionConfiguration['apiUrl'];
-        self::$googleApiUrl = $extensionConfiguration['googleapiUrl'];
-        self::$googleApiKey = $extensionConfiguration['googleapiKey'];
+        $configuration = GeneralUtility::makeInstance(Configuration::class);
+        self::$apiKey = $configuration->getApiKey();
 
         self::$configurationLoaded = true;
     }
 
+    /**
+     * ToDo: Migrated function to own class object "WebVision\Deepltranslate\Core\Form\TranslationButtonGenerator"
+     */
     public static function buildTranslateButton(
         $table,
         $id,
@@ -150,14 +93,15 @@ class DeeplBackendUtility
         $title =
             (string)LocalizationUtility::translate(
                 'backend.button.translate',
-                'wv_deepltranslate',
+                'DeepltranslateCore',
                 [
                     htmlspecialchars($languageTitle),
                 ]
             );
 
         if ($flagIcon) {
-            $icon = self::getIcon($flagIcon);
+            $iconOverlayGenerator = GeneralUtility::makeInstance(IconOverlayGenerator::class);
+            $icon = $iconOverlayGenerator->get($flagIcon);
             $lC = $icon->render();
         } else {
             $lC = GeneralUtility::makeInstance(
@@ -175,52 +119,28 @@ class DeeplBackendUtility
             . $lC . '</a> ';
     }
 
+    /**
+     * @throws RouteNotFoundException
+     */
     public static function buildBackendRoute(string $route, array $parameters): string
     {
         $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
         return (string)$uriBuilder->buildUriFromRoute($route, $parameters);
     }
 
-    private static function getIcon(string $iconFlag): Icon
+    /**
+     * @deprecated This function will no longer be used and will be removed in a later version please use it \WebVision\Deepltranslate\Core\Service\IconOverlayGenerator
+     * @see IconOverlayGenerator::get()
+     */
+    public static function getIcon(string $iconFlag): Icon
     {
-        $deeplTranslateIcon = sprintf('deepl-translate-%s', $iconFlag);
-        $newIcon = GeneralUtility::makeInstance(IconFactory::class)
-            ->getIcon(
-                $deeplTranslateIcon,
-                Icon::SIZE_SMALL
-            );
-
-        if ($newIcon->getIdentifier() !== 'default-not-found') {
-            return $newIcon;
-        }
-        $flagIcon = GeneralUtility::makeInstance(IconFactory::class)
-            ->getIcon(
-                $iconFlag,
-                Icon::SIZE_SMALL
-            );
-        $deeplIcon = GeneralUtility::makeInstance(
-            IconFactory::class
-        )->getIcon(
-            'deepl-grey-logo',
-            Icon::SIZE_OVERLAY
-        );
-        GeneralUtility::makeInstance(IconRegistry::class)
-            ->registerIcon(
-                $deeplTranslateIcon,
-                BitmapIconProvider::class,
-            );
-
-        $newIcon = GeneralUtility::makeInstance(IconFactory::class)
-            ->getIcon(
-                $deeplTranslateIcon,
-                Icon::SIZE_SMALL
-            );
-        $newIcon->setIdentifier($deeplTranslateIcon);
-        $newIcon->setMarkup($flagIcon->getMarkup());
-        $newIcon->setOverlayIcon($deeplIcon);
-        return $newIcon;
+        $iconOverlayGenerator = GeneralUtility::makeInstance(IconOverlayGenerator::class);
+        return $iconOverlayGenerator->get($iconFlag);
     }
 
+    /**
+     * ToDo: Migrated function to own class object "WebVision\Deepltranslate\Core\Form\TranslationDropdownGenerator"
+     */
     public static function buildTranslateDropdown(
         $siteLanguages,
         $id,
@@ -248,7 +168,8 @@ class DeeplBackendUtility
                     (int)self::getBackendUserAuthentication()->workspace
                 )
             );
-        $statement = $queryBuilder->select('uid', $languageField)
+        $statement = $queryBuilder
+            ->select('uid', $languageField)
             ->from('pages')
             ->where(
                 $queryBuilder->expr()->eq(
@@ -256,8 +177,8 @@ class DeeplBackendUtility
                     $queryBuilder->createNamedParameter($id, Connection::PARAM_INT)
                 )
             )
-            ->execute();
-        while ($pageTranslation = $statement->fetch()) {
+            ->executeQuery();
+        while ($pageTranslation = $statement->fetchAssociative()) {
             unset($availableTranslations[(int)$pageTranslation[$languageField]]);
         }
         // If any languages are left, make selector:
@@ -287,7 +208,7 @@ class DeeplBackendUtility
             if ($output !== '') {
                 $output = sprintf(
                     '<option value="">%s</option>%s',
-                    htmlspecialchars((string)LocalizationUtility::translate('backend.label', 'wv_deepltranslate')),
+                    htmlspecialchars((string)LocalizationUtility::translate('backend.label', 'DeepltranslateCore')),
                     $output
                 );
             }
@@ -299,21 +220,17 @@ class DeeplBackendUtility
 
     public static function checkCanBeTranslated(int $pageId, int $languageId): bool
     {
-        $languageService = GeneralUtility::makeInstance(LanguageService::class);
-        $site = $languageService->getCurrentSite('pages', $pageId);
-        if ($site === null) {
-            return false;
-        }
         try {
-            $languageService->getSourceLanguage($site['site']);
-        } catch (LanguageIsoCodeNotFoundException $e) {
+            /** @var LanguageService $languageService */
+            $languageService = GeneralUtility::makeInstance(LanguageService::class);
+            $site = GeneralUtility::makeInstance(SiteFinder::class)->getSiteByPageId($pageId);
+
+            $languageService->getSourceLanguage($site);
+            $languageService->getTargetLanguage($site, $languageId);
+        } catch (LanguageIsoCodeNotFoundException|LanguageRecordNotFoundException|SiteNotFoundException $e) {
             return false;
         }
-        try {
-            $languageService->getTargetLanguage($site['site'], $languageId);
-        } catch (LanguageIsoCodeNotFoundException|LanguageRecordNotFoundException $e) {
-            return false;
-        }
+
         return true;
     }
 
@@ -338,27 +255,22 @@ class DeeplBackendUtility
     /**
      * @return array{uid: int, title: string}|array<empty>
      */
-    public static function detectCurrentPage(): array
+    public static function detectCurrentPage(ProcessingInstruction $processingInstruction): array
     {
         self::$currentPage = [];
-        $request = $GLOBALS['TYPO3_REQUEST'];
-        $queryParams = $request ? $request->getQueryParams() : [];
-        if (isset($queryParams['id']) || isset($queryParams['pageId'])) {
-            $currentId = (int)($queryParams['id'] ?? $queryParams['pageId']);
-            return self::getPageRecord($currentId);
-        }
-        if (isset($queryParams['cmd'])) {
-            foreach ($queryParams['cmd'] as $possibleTable => $values) {
-                if ($possibleTable === 'localization') {
-                    continue;
-                }
-                [$id] = array_keys($values);
-                if ($possibleTable === 'pages') {
-                    self::$currentPage = self::getPageRecord($id);
-                }
-                $pageId = self::getPageIdFromRecord($possibleTable, $id);
-                self::$currentPage = self::getPageRecord($pageId);
-            }
+
+        if ($processingInstruction->getProcessingTable() === 'pages') {
+            self::$currentPage = self::getPageRecord((int)$processingInstruction->getProcessingId());
+        } elseif (
+            $processingInstruction->getProcessingTable() !== null
+            && strlen($processingInstruction->getProcessingTable()) > 0
+            && MathUtility::canBeInterpretedAsInteger($processingInstruction->getProcessingId())
+        ) {
+            $pageId = self::getPageIdFromRecord(
+                (string)$processingInstruction->getProcessingTable(),
+                (int)$processingInstruction->getProcessingId()
+            );
+            self::$currentPage = self::getPageRecord($pageId);
         }
 
         return self::$currentPage;
@@ -384,6 +296,6 @@ class DeeplBackendUtility
             $id,
             'pid'
         );
-        return $record['pid'];
+        return (int)($record['pid'] ?? null);
     }
 }

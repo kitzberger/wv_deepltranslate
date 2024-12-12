@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 return [
     'ctrl' => [
-        'title' => 'LLL:EXT:wv_deepltranslate/Resources/Private/Language/locallang.xlf:glossaryentry',
+        'title' => 'LLL:EXT:deepltranslate_core/Resources/Private/Language/locallang.xlf:glossaryentry',
         'label' => 'term',
-        'iconfile' => 'EXT:wv_deepltranslate/Resources/Public/Icons/deepl.svg',
+        'iconfile' => 'EXT:deepltranslate_core/Resources/Public/Icons/deepl.svg',
         'default_sortby' => 'term ASC',
         'tstamp' => 'tstamp',
         'crdate' => 'crdate',
-        'cruser_id' => 'cruser_id',
         'delete' => 'deleted',
         'hideTable' => false,
         'versioningWS' => false,
@@ -44,8 +43,8 @@ return [
                 'renderType' => 'checkboxToggle',
                 'items' => [
                     [
-                        0 => '',
-                        1 => '',
+                        'label' => '',
+                        'value' => '',
                         'invertStateDisplay' => true,
                     ],
                 ],
@@ -59,8 +58,8 @@ return [
                 'renderType' => 'selectSingle',
                 'items' => [
                     [
-                        '',
-                        0,
+                        'label' => '',
+                        'value' => 0,
                     ],
                 ],
                 'foreign_table' => 'tx_wvdeepltranslate_glossaryentry',
@@ -82,11 +81,12 @@ return [
             ],
         ],
         'term' => [
-            'label' => 'LLL:EXT:wv_deepltranslate/Resources/Private/Language/locallang.xlf:entry.source',
+            'label' => 'LLL:EXT:deepltranslate_core/Resources/Private/Language/locallang.xlf:entry.source',
             'l10n_mode' => '',
             'config' => [
                 'type' => 'input',
-                'eval' => 'trim,required',
+                'required' => true,
+                'eval' => 'trim',
             ],
         ],
     ],

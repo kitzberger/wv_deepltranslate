@@ -2,31 +2,26 @@
 
 declare(strict_types=1);
 
-namespace WebVision\WvDeepltranslate\Hooks;
+namespace WebVision\Deepltranslate\Core\Hooks;
 
-use TYPO3\CMS\Core\Information\Typo3Version;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Context\Exception\AspectNotFoundException;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 class DeeplPreviewFlagGeneratePageHook
 {
     /**
      * @param array{pObj: TypoScriptFrontendController} $params
+     * @throws AspectNotFoundException
      */
     public function renderDeeplPreviewFlag(array $params): void
     {
         $controller = $params['pObj'];
 
-        $typo3Version = GeneralUtility::makeInstance(Typo3Version::class);
-        if ($typo3Version->getMajorVersion() < 10) {
-            $isInPreviewMode = (bool)$controller->fePreview;
-        } else {
-            $isInPreviewMode = $controller->getContext()->hasAspect('frontend.preview')
-                && $controller->getContext()->getPropertyFromAspect('frontend.preview', 'isPreview');
-        }
+        $isInPreviewMode = $controller->getContext()->hasAspect('frontend.preview')
+            && $controller->getContext()->getPropertyFromAspect('frontend.preview', 'isPreview');
         if (
             !$isInPreviewMode
-            || $controller->doWorkspacePreview()
+            || $controller->getContext()->getPropertyFromAspect('workspace', 'isOffline', false)
             || ($controller->config['config']['disablePreviewNotification'] ?? false)
             || (
                 isset($controller->page['tx_wvdeepltranslate_translated_time'])

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WebVision\WvDeepltranslate\Hooks;
+namespace WebVision\Deepltranslate\Core\Hooks;
 
 use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Utility\MathUtility;
@@ -36,6 +36,7 @@ class AllowLanguageSynchronizationHook
                     }
                 }
                 if (!empty($l10nState)) {
+                    // @todo Use flag `JSON_THROW_ON_ERROR` and deal with json encoding issues.
                     $element['l10n_state'] = json_encode($l10nState);
                     $dataHandler->datamap[$table][$key] = $element;
                 }
